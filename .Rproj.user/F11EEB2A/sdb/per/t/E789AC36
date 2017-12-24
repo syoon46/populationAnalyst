@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "\n# This is the user-interface definition of a Shiny web application.\n# You can find out more about building applications with Shiny here:\n#\n# http://shiny.rstudio.com\n#\n\nlibrary(shiny)\n\ncountry_data = read.csv(\"data/final_data.csv\")\n\nshinyUI(fluidPage(\n  # Application title\n  titlePanel(\"Analysis of the International Population\"),\n\n  # Sidebar with a slider input for number of bins\n  sidebarLayout(\n     sidebarPanel(\n       sliderInput(\"range\",\n                   \"Contraceptive Usage Rate (%):\",\n                   min = min(country_data$AverageCtrpt),\n                   max = max(country_data$AverageCtrpt),\n                   value = c(min(country_data$AverageCtrpt),max(country_data$AverageCtrpt))) # close sliderinput\n     ),#close sidebar panel\n\n    # Show a plot of the generated distribution\n    mainPanel(\n      plotOutput(\"ctrpt\"),\n      plotOutput(\"growth\"),\n      plotOutput(\"gdp\"),\n      plotOutput(\"fertility\")\n    )\n  )\n))\n",
+    "created" : 1514098638012.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3005136210",
+    "id" : "E789AC36",
+    "lastKnownWriteTime" : 1514100168,
+    "last_content_update" : 1514100168957,
+    "path" : "C:/Users/Danny/Desktop/UIUC/Fall 17/STAT385/project/stat385final/ui.R",
+    "project_path" : "ui.R",
+    "properties" : {
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

@@ -1,0 +1,9 @@
+"0","mapParams <- mapCountryData( sPDF, 
+                             nameColumnToPlot= ""AverageCtrpt"" , 
+                             oceanCol = 'lightblue', 
+                             missingCountryCol = 'snow', 
+                             mapTitle = ""Global 2010's average Contraceptive Usage"", 
+                             addLegend = FALSE, 
+                             colourPalette = colourPalette )
+"
+"2","5 colours specified and 7 required, using interpolation to calculate colours"

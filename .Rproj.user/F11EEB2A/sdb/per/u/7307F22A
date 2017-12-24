@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "country_data = read.csv(\"data/final_data.csv\")\n\n\nsubset = country_data[(country_data$AverageCtrpt>=30 & country_data$AverageCtrpt <=70),]\nsubset\nView(subset)\n",
+    "created" : 1514100945981.000,
+    "dirty" : true,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "3148214738",
+    "id" : "7307F22A",
+    "lastKnownWriteTime" : 23925768164737135,
+    "last_content_update" : 1514101023594,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

@@ -1,0 +1,438 @@
+---
+title: "STAT395 Project"
+author: "..."
+date: "December 13, 2017"
+output:
+  html_document:
+    theme: readable
+    toc: yes
+---
+
+
+```{r, error=FALSE, warning=FALSE, message=FALSE}
+library(dplyr)
+library(ggplot2)
+library(stringr)
+```
+
+#Reding Data
+
+```{r}
+#read original data
+contraceptive_history = read.csv("UNPD_WCU2017_Country_Data_Survey-Based.csv", stringsAsFactors=FALSE, encoding="ISO-8859-1")
+
+age_specific_fertility_rates = read.csv("age_specific_fertility_rates.csv", stringsAsFactors=FALSE, encoding="ASCII" )
+
+gdp_per_capita = read.csv("gdp_per_capita.csv", stringsAsFactors=FALSE, encoding = "UTF-8")
+
+birth_death_growth_rates = read.csv("birth_death_growth_rates.csv", stringsAsFactors=FALSE, encoding = "ASCII")
+```
+
+#Data cleaning prep
+```{r}
+#clean data by making key value in contraceptive history data
+
+#we will use countraceptive country name as key vector for merging in the future code
+#since it has the least amount of country name
+contraceptive_country = unique(contraceptive_history$Country.or.area) 
+
+fertility_country = unique(age_specific_fertility_rates$country_name)
+
+gpd_country = unique(gdp_per_capita$X.U.FEFF.Country.Name)
+
+growth_country = unique(birth_death_growth_rates$country_name)
+```
+
+
+
+#Contraceptive usage 
+
+##Data selection
+```{r}
+#select variable that is needed for this project
+contraceptive_2010s = select(contraceptive_history, Country.or.area, Survey..start.year, Any.method)
+
+country_name = as.character(unique(contraceptive_history$Country.or.area))
+
+#create new dataframe to store average contraceptive usage
+average_contraceptive_usage = data.frame(country_name,rep(0,length(country_name)))
+
+average_contraceptive_usage %>% mutate_if(is.factor, as.character) -> average_contraceptive_usage
+
+contraceptive_2010s %>% mutate_if(is.factor, as.character) -> contraceptive_2010s
+
+contraceptive_2010s$Any.method = as.numeric(contraceptive_2010s$Any.method)
+
+colnames(average_contraceptive_usage) = c("CountryName", "AverageCtrpt")
+
+#recursively collect data from original data
+for(i in 1:length(country_name)){
+  count = 0 
+  for(j in 1:nrow(contraceptive_2010s)){
+    
+    #extract data only from 2010s
+    if((average_contraceptive_usage$CountryName[i] == contraceptive_2010s$Country.or.area[j]) && (contraceptive_2010s$Survey..start.year[j] >= 2010)){
+        average_contraceptive_usage$AverageCtrpt[i] = average_contraceptive_usage$AverageCtrpt[i] + contraceptive_2010s$Any.method[j]
+        count = count + 1
+    }
+  }
+  #find average of 2010s contraceptive usage
+  average_contraceptive_usage$AverageCtrpt[i] = average_contraceptive_usage$AverageCtrpt[i]/count
+}
+
+#remove any na rows
+average_contraceptive_usage = average_contraceptive_usage[complete.cases(average_contraceptive_usage), ]
+
+#view glimpse of new data
+head(average_contraceptive_usage)
+```
+
+#GDP per capita
+
+##Data selection
+```{r}
+#select variables that is needed for this project
+gdp_per_capita_subset = select(gdp_per_capita, X.U.FEFF.Country.Name, Country.Code, X2010, X2011, X2012, X2013, X2014, X2015, X2016)
+
+colnames(gdp_per_capita_subset) = c("CountryName", "CountryCode", "2010", "2011", "2012", "2013", "2014", "2015", "2016")
+
+#clean gdp rate country name using contraceptive country list
+gdp_country_exists = data.frame(contraceptive_country, rep(FALSE,length(contraceptive_country)))
+
+colnames(gdp_country_exists) = c("country_name", "exists")
+
+gpd_country = as.character(gpd_country)
+
+gdp_country_exists$country_name = as.character(gdp_country_exists$country_name)
+
+for(i in 1:length(contraceptive_country)){
+  for(j in 1: length(gpd_country)){
+    if(gdp_country_exists$country_name[i] == gpd_country[j]){
+      gdp_country_exists$exists[i] = TRUE 
+    }
+    else {
+      next;
+    }
+  }
+}
+
+need_name_change = gdp_country_exists$country_name[gdp_country_exists$exists==FALSE]
+
+need_name_change 
+```
+
+
+##Data cleaning
+```{r}
+#dirty work begins
+#cleaning real data
+gdp_per_capita_subset$CountryName[which(gdp_per_capita_subset$CountryName=="Bolivia")] = "Bolivia (Plurinational State of)"
+
+gdp_per_capita_subset$CountryName[which(gdp_per_capita_subset$CountryName=="Bahamas, The")] = "Bahamas"
+
+gdp_per_capita_subset$CountryName[which(gdp_per_capita_subset$CountryName=="Congo, Dem. Rep.")] = "Congo"
+
+gdp_per_capita_subset$CountryName[which(gdp_per_capita_subset$CountryName=="Congo, Rep.")] = "Congo"
+
+gdp_per_capita_subset$CountryName[which(gdp_per_capita_subset$CountryName=="Egypt, Arab Rep.")] = "Egypt"
+
+gdp_per_capita_subset$CountryName[which(gdp_per_capita_subset$CountryName=="Gambia, The")] = "Gambia"
+
+gdp_per_capita_subset$CountryName[which(gdp_per_capita_subset$CountryName=="Yemen, Rep.")] = "Yemen"
+
+gdp_per_capita_subset$CountryName[which(gdp_per_capita_subset$CountryName=="Iran, Islamic Rep.")] = "Iran (Islamic Republic of)"
+
+gdp_per_capita_subset$CountryName[which(gdp_per_capita_subset$CountryName=="Lao PDR")] = "Lao People's Democratic Republic"
+
+gdp_per_capita_subset$CountryName[which(gdp_per_capita_subset$CountryName=="Korea, Dem. People's Rep")] = "Republic of Korea"
+
+gdp_per_capita_subset$CountryName[which(gdp_per_capita_subset$CountryName=="Korea, Rep.")] = "Republic of Korea"
+
+gdp_per_capita_subset$CountryName[which(gdp_per_capita_subset$CountryName=="Moldova")] = "Republic of Moldova"
+
+gdp_per_capita_subset$CountryName[which(gdp_per_capita_subset$CountryName=="St. Kitts and Nevis")] = "Saint Kitts and Nevis"
+
+gdp_per_capita_subset$CountryName[which(gdp_per_capita_subset$CountryName=="St. Lucia")] = "Saint Lucia"
+
+gdp_per_capita_subset$CountryName[which(gdp_per_capita_subset$CountryName=="St. Vincent and the Grenadines")] = "Saint Vincent and the Grenadines"
+
+gdp_per_capita_subset$CountryName[which(gdp_per_capita_subset$CountryName=="Tanzania")] = "United Republic of Tanzania"
+
+gdp_per_capita_subset$CountryName[which(gdp_per_capita_subset$CountryName=="United States")] = "United States of America"
+
+gdp_per_capita_subset$CountryName[which(gdp_per_capita_subset$CountryName=="Virgin Islands (U.S.)")] = "United States Virgin Islands"
+
+gdp_per_capita_subset$CountryName[which(gdp_per_capita_subset$CountryName=="Venezuela, RB")] = "Venezuela (Bolivarian Republic of)"
+
+gdp_per_capita_subset$CountryName[which(gdp_per_capita_subset$CountryName=="Vietnam")] = "Viet Nam"
+
+```
+
+##Data manipulation
+```{r}
+average_gdp_per_capita = data.frame(gdp_per_capita_subset$CountryName,gdp_per_capita_subset$CountryCode, rep(0,nrow(gdp_per_capita)))
+
+colnames(average_gdp_per_capita) = c("CountryName", "CountryCode", "AverageGDP")
+
+#find average gdp of 2010s
+average_gdp_per_capita$AverageGDP = (gdp_per_capita_subset$`2010` + gdp_per_capita_subset$`2011` + gdp_per_capita_subset$`2013` + gdp_per_capita_subset$`2014` + gdp_per_capita_subset$`2015` + gdp_per_capita_subset$`2016`)/6
+
+#remove any row with na values
+average_gdp_per_capita = average_gdp_per_capita[complete.cases(average_gdp_per_capita), ]
+
+average_gdp_per_capita$CountryName = as.character(average_gdp_per_capita$CountryName)
+
+#view glimpse of new data
+head(average_gdp_per_capita)
+```
+
+#Fertility rate
+
+##Data selection
+```{r}
+#clean fertility country name using contraceptive country list
+fertility_country_exists = data.frame(contraceptive_country, rep(FALSE,length(contraceptive_country)))
+
+colnames(fertility_country_exists) = c("country_name", "exists")
+
+fertility_country = as.character(fertility_country)
+
+fertility_country_exists$country_name = as.character(fertility_country_exists$country_name)
+
+for(i in 1:length(contraceptive_country)){
+  for(j in 1: length(fertility_country)){
+    if(fertility_country_exists$country_name[i] == fertility_country[j]){
+      fertility_country_exists$exists[i] = TRUE 
+    }
+    else {
+      next;
+    }
+  }
+}
+
+#View(fertility_country_exists)
+
+need_name_change = fertility_country_exists$country_name[fertility_country_exists$exists==FALSE]
+
+need_name_change
+
+fertility_rates = select(age_specific_fertility_rates, country_name, year, total_fertility_rate)
+
+fertility_rates_subset = subset(fertility_rates, year >= 2010 & year <= 2016)
+```
+
+##Data cleaning
+```{r}
+#dirty work begins
+#cleaning real data
+fertility_rates_subset$country_name[which(fertility_rates_subset$country_name=="Bahamas The")] = "Bahamas"
+
+fertility_rates_subset$country_name[which(fertility_rates_subset$country_name=="Bolivia")] = "Bolivia (Plurinational State of)"
+
+fertility_rates_subset$country_name[which(fertility_rates_subset$country_name=="China")] = "China, Hong Kong SAR"
+
+fertility_rates_subset$country_name[which(fertility_rates_subset$country_name=="Congo (Kinshasa)")] = "Congo"
+
+fertility_rates_subset$country_name[which(fertility_rates_subset$country_name=="Congo (Brazzaville)")] = "Congo"
+
+fertility_rates_subset$country_name[which(fertility_rates_subset$country_name=="Korea South")] = "Republic of Korea"
+
+fertility_rates_subset$country_name[which(fertility_rates_subset$country_name=="Korea North")] = "Democratic People's Republic of Korea"
+
+fertility_rates_subset$country_name[which(fertility_rates_subset$country_name=="Gambia The")] = "Gambia"
+
+fertility_rates_subset$country_name[which(fertility_rates_subset$country_name=="Iran")] = "Iran (Islamic Republic of)"
+
+fertility_rates_subset$country_name[which(fertility_rates_subset$country_name=="Laos")] = "Lao People's Democratic Republic"
+
+fertility_rates_subset$country_name[which(fertility_rates_subset$country_name=="Saint Martin")] = "Martinique"
+
+fertility_rates_subset$country_name[which(fertility_rates_subset$country_name=="Moldova")] = "Republic of Moldova"
+
+fertility_rates_subset$country_name[which(fertility_rates_subset$country_name=="Russia")] = "Russian Federation"
+
+fertility_rates_subset$country_name[which(fertility_rates_subset$country_name=="Saudi Arabia")] = "Syrian Arab Republic"
+
+fertility_rates_subset$country_name[which(fertility_rates_subset$country_name=="United Arab Emirates")] = "Syrian Arab Republic"
+
+fertility_rates_subset$country_name[which(fertility_rates_subset$country_name=="Macedonia")] = "The former Yugoslav Republic of Macedonia"
+
+fertility_rates_subset$country_name[which(fertility_rates_subset$country_name=="Tanzania")] = "United Republic of Tanzania"
+
+fertility_rates_subset$country_name[which(fertility_rates_subset$country_name=="United States")] = "United States of America"
+
+fertility_rates_subset$country_name[which(fertility_rates_subset$country_name=="Virgin Islands U.S.")] = "United States Virgin Islands"
+
+fertility_rates_subset$country_name[which(fertility_rates_subset$country_name=="Venezuela")] = "Venezuela (Bolivarian Republic of)"
+
+fertility_rates_subset$country_name[which(fertility_rates_subset$country_name=="Vietnam")] = "Viet Nam"
+
+```
+
+
+##Data manipulation
+```{r}
+country_name = as.character(unique(fertility_rates_subset$country_name))
+
+average_fertility_rate = data.frame(country_name,rep(0,length(country_name)))
+
+colnames(average_fertility_rate) = c("CountryName", "AverageFertility")
+
+for(i in 1:length(country_name)){
+  count = 0 
+  for(j in 1:nrow(fertility_rates_subset)){
+    
+    #extract data only from 2010 ~ 2016
+    if((country_name[i] == fertility_rates_subset$country_name[j])){
+        average_fertility_rate$AverageFertility[i] = average_fertility_rate$AverageFertility[i] + fertility_rates_subset$total_fertility_rate[j]
+        count = count + 1
+    }
+  }
+  #find average of 2010 ~ 2016 fertility rate
+  average_fertility_rate$AverageFertility[i] = average_fertility_rate$AverageFertility[i]/count
+}
+
+
+head(average_fertility_rate)
+```
+
+#Growth rate
+
+##Data selection
+```{r}
+#clean growth rate country name using contraceptive country list
+growth_country_exists = data.frame(contraceptive_country, rep(FALSE,length(contraceptive_country)))
+
+colnames(growth_country_exists) = c("country_name", "exists")
+
+growth_country = as.character(growth_country)
+
+growth_country_exists$country_name = as.character(growth_country_exists$country_name)
+
+for(i in 1:length(contraceptive_country)){
+  for(j in 1: length(growth_country)){
+    if(growth_country_exists$country_name[i] == growth_country[j]){
+      growth_country_exists$exists[i] = TRUE 
+    }
+    else {
+      next;
+    }
+  }
+}
+
+need_name_change = growth_country_exists$country_name[growth_country_exists$exists==FALSE]
+
+need_name_change
+
+growth_rates = select(birth_death_growth_rates, country_name, year, growth_rate)
+
+growth_rates_subset = subset(growth_rates, year >= 2010 & year <= 2016)
+
+```
+
+##Data cleaning
+```{r}
+#dirty work begins
+#cleaning real data
+
+growth_rates_subset$country_name[which(growth_rates_subset$country_name=="Bahamas The")] = "Bahamas"
+growth_rates_subset$country_name[which(growth_rates_subset$country_name=="China")] = "China, Hong Kong SAR"
+
+#growth_rates_subset$country_name[which(growth_rates_subset$country_name=="Cote d'Ivoire")] = "C\364te d'Ivoire"
+
+growth_rates_subset$country_name[which(growth_rates_subset$country_name=="Congo (Kinshasa)")] = "Democratic Republic of the Congo"
+
+growth_rates_subset$country_name[which(growth_rates_subset$country_name=="Laos")] = "Lao People's Democratic Republic"
+
+growth_rates_subset$country_name[which(growth_rates_subset$country_name=="Moldova")] = "Republic of Moldova"
+growth_rates_subset$country_name[which(growth_rates_subset$country_name=="Russia")] = "Russian Federation"
+growth_rates_subset$country_name[which(growth_rates_subset$country_name=="Syria")] = "Syrian Arab Republic"
+growth_rates_subset$country_name[which(growth_rates_subset$country_name=="Tanzania")] = "United Republic of Tanzania"
+growth_rates_subset$country_name[which(growth_rates_subset$country_name=="Virgin Islands U.S.")] = "United States Virgin Islands"
+growth_rates_subset$country_name[which(growth_rates_subset$country_name=="Vietnam")] = "Viet Nam"
+growth_rates_subset$country_name[which(growth_rates_subset$country_name=="Bolivia")] = "Bolivia (Plurinational State of)"
+growth_rates_subset$country_name[which(growth_rates_subset$country_name=="Congo (Kinshasa)")] = "Congo"
+growth_rates_subset$country_name[which(growth_rates_subset$country_name=="Congo (Brazzaville)")] = "Congo"
+growth_rates_subset$country_name[which(growth_rates_subset$country_name=="Korea North")] = "Democratic People's Republic of Korea"
+growth_rates_subset$country_name[which(growth_rates_subset$country_name=="Korea South")] = "Republic of Korea"
+growth_rates_subset$country_name[which(growth_rates_subset$country_name=="Gambia The")] = "Gambia"
+#growth_rates_subset$country_name[which(growth_rates_subset$country_name=="")] = "R\351union"
+
+growth_rates_subset$country_name[which(growth_rates_subset$country_name=="Macedonia")] = "The former Yugoslav Republic of Macedonia"
+growth_rates_subset$country_name[which(growth_rates_subset$country_name=="United States")] = "United States of America"
+growth_rates_subset$country_name[which(growth_rates_subset$country_name=="Venezuela")] = "Venezuela (Bolivarian Republic of)"
+
+
+```
+
+##Data manipulation
+```{r}
+country_name = unique(growth_rates_subset$country_name)
+
+average_growth_rate = data.frame(country_name,rep(0,length(country_name)))
+
+colnames(average_growth_rate) = c("CountryName", "AverageGrowthRate")
+
+for(i in 1:length(country_name)){
+  count = 0 
+  for(j in 1:nrow(growth_rates_subset)){
+    
+    #extract data only from 2010 ~ 2016
+    if((country_name[i] == growth_rates_subset$country_name[j])){
+          average_growth_rate$AverageGrowthRate[i] = average_growth_rate$AverageGrowthRate[i] + growth_rates_subset$growth_rate[j]
+        count = count + 1
+    }
+  }
+  #find average of 2010 ~ 2016 Growth Rate
+  average_growth_rate$AverageGrowthRate[i] = average_growth_rate$AverageGrowthRate[i]/count
+}
+
+
+head(average_growth_rate)
+```
+
+#World Data
+
+##Merge data
+```{r}
+#order by country name
+average_gdp_per_capita = average_gdp_per_capita[order(average_gdp_per_capita$CountryName),]
+
+#order by country name
+average_contraceptive_usage = average_contraceptive_usage[order(average_contraceptive_usage$CountryName),]
+
+#order by country name
+average_growth_rate = average_growth_rate[order(average_growth_rate$CountryName),]
+
+#order by country name
+average_fertility_rate = average_fertility_rate[order(average_fertility_rate$CountryName),]
+
+#join four dataset into world data by using "key" variabe, country name
+world_data = dplyr::inner_join(average_gdp_per_capita, dplyr::inner_join(average_contraceptive_usage, dplyr::inner_join(average_growth_rate,average_fertility_rate, by = "CountryName"), by = "CountryName"), by = "CountryName")
+
+world_data$CountryCode = as.character(world_data$CountryCode)
+
+#view glimpse of our final data 
+head(world_data)
+```
+
+#Merge Longitude and Latitude
+```{r}
+
+country_coord = read.csv("country_long_lat.csv", stringsAsFactors=FALSE)
+
+country_coord_subset = select(country_coord, CountryCode = Alpha.3.code, latitude = Latitude..average., longitude = Longitude..average.)
+
+country_coord_subset = country_coord_subset[order(country_coord_subset$CountryCode), ]
+
+country_coord_subset$CountryCode = str_replace_all(country_coord_subset$CountryCode, fixed(" "), "")
+
+world_data = world_data[order(world_data$CountryCode), ]
+
+final_data = merge(world_data, country_coord_subset, by = "CountryCode")
+```
+
+
+```{r}
+write.csv(final_data,'final_data')
+```
