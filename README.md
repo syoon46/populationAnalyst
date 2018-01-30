@@ -2,13 +2,15 @@
 
 User interactive website which shows the effect of contraceptive usage on GDP, growth rate, and fertility rate.
 
+Originally proposed for Fall 2017 **STAT385** University of Illinois at Urbana-Champaign
+
 ## Data Process
 
 First, I collected 5 dataset from different sources in order to combine its data.
 
 For each dataset, I selected only 2010's data and necessary variables.
 
-Each dataset contained **key** variable that I merged all of dataset using that variable and finalized one dataset with multiple variables.
+Each dataset contained **key** variable of **ISO3** country code that I merged all of dataset using that variable and finalized one dataset with multiple variables.
 
 I displayed chloropleth map using `rworldmap` R library.
 
@@ -17,6 +19,9 @@ I displayed chloropleth map using `rworldmap` R library.
 Users are able to control percentage of contraceptive usage and select different continents to display.
 
 ![Example](https://i.imgur.com/YEOzIvs.png)
+
+[Link to Website](https://dannypark95.shinyapps.io/populationAnalyst/)
+
 
 ## Source
 
