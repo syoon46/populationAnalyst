@@ -14,7 +14,7 @@ Each dataset contained **key** variable of **ISO3** country code that I merged a
 
 I displayed chloropleth map using `rworldmap` R library.
 
-###Sample of final dataset
+### Sample of final dataset
 
 ![](https://i.imgur.com/3UAh5jN.png)
 
