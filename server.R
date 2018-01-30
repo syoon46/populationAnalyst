@@ -15,6 +15,7 @@ country_data = read.csv("data/final_data.csv")
 shinyServer(function(input, output) {
   
   output$ctrpt <- renderPlot({
+    par(mai=c(0,0,0.2,0),xaxs="i",yaxs="i")
     country_data_subset = country_data[(country_data$AverageCtrpt>=input$range[1] & country_data$AverageCtrpt <=input$range[2]),]
     sPDF <- joinCountryData2Map( country_data_subset, joinCode = "ISO3", nameJoinColumn = "CountryCode")
     colourPalette <- rev(RColorBrewer::brewer.pal(5,'YlOrRd'))
@@ -25,10 +26,11 @@ shinyServer(function(input, output) {
                                  mapTitle = "Global 2010's average Contraceptive Usage", 
                                  addLegend = FALSE, 
                                  colourPalette = colourPalette )
-    do.call(addMapLegend, c( mapParams , legendLabels="all"  , legendWidth=0.5 , legendIntervals="data", legendMar = 2 ) )
+    do.call(addMapLegend, c( mapParams , legendLabels="all"  , legendWidth=0.75 , legendIntervals="data", legendMar = 2 ) )
   })
 
   output$growth <- renderPlot({
+    par(mai=c(0,0,0.2,0),xaxs="i",yaxs="i")
     country_data_subset = country_data[(country_data$AverageCtrpt>=input$range[1] & country_data$AverageCtrpt <=input$range[2]),]
     sPDF <- joinCountryData2Map( country_data_subset, joinCode = "ISO3", nameJoinColumn = "CountryCode")
     colourPalette <- RColorBrewer::brewer.pal(5,'PuBuGn')
@@ -43,6 +45,7 @@ shinyServer(function(input, output) {
   })
   
   output$gdp <- renderPlot({
+    par(mai=c(0,0,0.2,0),xaxs="i",yaxs="i")
     country_data_subset = country_data[(country_data$AverageCtrpt>=input$range[1] & country_data$AverageCtrpt <=input$range[2]),]
     sPDF <- joinCountryData2Map( country_data_subset, joinCode = "ISO3", nameJoinColumn = "CountryCode")
     colourPalette <- RColorBrewer::brewer.pal(5,'YlGnBu')
@@ -57,6 +60,7 @@ shinyServer(function(input, output) {
   })
   
   output$fertility <- renderPlot({
+    par(mai=c(0,0,0.2,0),xaxs="i",yaxs="i")
     country_data_subset = country_data[(country_data$AverageCtrpt>=input$range[1] & country_data$AverageCtrpt <=input$range[2]),]
     sPDF <- joinCountryData2Map( country_data_subset, joinCode = "ISO3", nameJoinColumn = "CountryCode")
     colourPalette <- RColorBrewer::brewer.pal(5,'RdPu')

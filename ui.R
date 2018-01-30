@@ -14,17 +14,20 @@ shinyUI(fluidPage(
   titlePanel("Analysis of the International Population"),
 
   # Sidebar with a slider input for number of bins
-  sidebarLayout(
-     sidebarPanel(
+  fluidRow(
+    
+    column(3,
+        wellPanel(
        sliderInput("range",
                    "Contraceptive Usage Rate (%):",
                    min = min(country_data$AverageCtrpt),
                    max = max(country_data$AverageCtrpt),
                    value = c(min(country_data$AverageCtrpt),max(country_data$AverageCtrpt))) # close sliderinput
+     )
      ),#close sidebar panel
 
     # Show a plot of the generated distribution
-    mainPanel(
+    column(12,
       plotOutput("ctrpt"),
       plotOutput("growth"),
       plotOutput("gdp"),

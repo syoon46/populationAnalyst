@@ -5,8 +5,8 @@ account: dannypark95
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 251429
-bundleId: 1149343
+bundleId: 1149354
 url: https://dannypark95.shinyapps.io/stat385final/
-when: 1514101407.41309
+when: 1514102846.25535
 asMultiple: FALSE
 asStatic: FALSE

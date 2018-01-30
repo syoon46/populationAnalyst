@@ -436,3 +436,8 @@ final_data = merge(world_data, country_coord_subset, by = "CountryCode")
 ```{r}
 write.csv(final_data,'final_data')
 ```
+
+```{r}
+View(read.csv('final_data.csv'))
+```
+
