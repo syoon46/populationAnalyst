@@ -1,0 +1,12 @@
+name: populationAnalyst
+title: populationAnalyst
+username:
+account: dannypark95
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 266409
+bundleId: 1199072
+url: https://dannypark95.shinyapps.io/populationAnalyst/
+when: 1517313877.95177
+asMultiple: FALSE
+asStatic: FALSE

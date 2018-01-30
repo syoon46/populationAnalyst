@@ -416,28 +416,28 @@ world_data$CountryCode = as.character(world_data$CountryCode)
 head(world_data)
 ```
 
-#Merge Longitude and Latitude
+#Merge Continent
 ```{r}
+continent = read.csv('continent.csv', stringsAsFactors=FALSE)
 
-country_coord = read.csv("country_long_lat.csv", stringsAsFactors=FALSE)
+continent_subset = select(continent, CountryCode = alpha.3, region, sub.region)
 
-country_coord_subset = select(country_coord, CountryCode = Alpha.3.code, latitude = Latitude..average., longitude = Longitude..average.)
+continent_subset = continent_subset[order(continent_subset$CountryCode), ]
 
-country_coord_subset = country_coord_subset[order(country_coord_subset$CountryCode), ]
+final_data = merge(world_data, continent_subset, by = "CountryCode")
 
-country_coord_subset$CountryCode = str_replace_all(country_coord_subset$CountryCode, fixed(" "), "")
+for(i in 1:nrow(final_data)){
+  if(final_data$region[i] == "Americas"){
+    final_data$region[i] = final_data$sub.region[i]
+  }
+}
 
-world_data = world_data[order(world_data$CountryCode), ]
+final_data = subset(final_data, select = -c(sub.region))
 
-final_data = merge(world_data, country_coord_subset, by = "CountryCode")
+head(final_data)
 ```
 
 
 ```{r}
-write.csv(final_data,'final_data')
+write.csv(final_data,'final_data.csv')
 ```
-
-```{r}
-View(read.csv('final_data.csv'))
-```
-
